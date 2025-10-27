@@ -11,78 +11,131 @@ namespace BookManagerApp.Logic
 {
     public class GiverManager
     {
-        private List<Giver> _givers = new List<Giver> ();
-
-        private int NextId = 1;
+        private List<Giver> _givers = new List<Giver>();
+        private int _nextId = 1;
+        private BookManager _bookManager;
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="bookManager"></param>
+        public GiverManager(BookManager bookManager)
+        {
+            _bookManager = bookManager;
+        }
+        /// <summary>
+        /// добавить дарителя
+        /// </summary>
         /// <param name="name"></param>
-        /// <param name="thing"></param>
-        /// <param name="abilitiesofthething"></param>
-        /// <param name="yearofcreation"></param>
+        /// <param name="bookId"></param>
+        /// <param name="yearOfCreation"></param>
+        /// <param name="team"></param>
         /// <exception cref="ArgumentException"></exception>
-        // создание сущности
-        public void AddGiver(string name,string thing,string abilitiesofthething, int yearofcreation,string team)
+        public void AddGiver(string name, int bookId, int yearOfCreation, string team)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Даритель не может существовать без имени");
-            if (string.IsNullOrWhiteSpace(thing))
-                throw new ArgumentException("У каждого дариетля должна быть своя любимая вещь");
-            if (string.IsNullOrWhiteSpace(abilitiesofthething))
-                throw new ArgumentException("Любимая вещь обязательно должна давать какую то силу");
+
+            // ПРОВЕРКА: существует ли книга с таким ID
+            if (!_bookManager.BookExists(bookId))
+                throw new ArgumentException($"Книги с ID {bookId} не существует!");
+
             if (string.IsNullOrWhiteSpace(team))
                 throw new ArgumentException("Даритель умрет на просторах мира без команды");
 
-            var giver = new Giver(NextId++,name,thing,abilitiesofthething,yearofcreation,team);
+            var giver = new Giver(_nextId++, name, bookId, yearOfCreation, team);
             _givers.Add(giver);
         }
-        // удаление сущности
-        public bool GiverToDelete(int Id)
+        /// <summary>
+        /// удалить дарителя
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public bool DeleteGiver(int id)
         {
-            var givertoremove = _givers.FirstOrDefault(x => x.Id == Id);
-            if (givertoremove != null)
+            var giverToRemove = _givers.FirstOrDefault(x => x.Id == id);
+            if (giverToRemove != null)
             {
-                _givers.Remove(givertoremove);
+                _givers.Remove(giverToRemove);
                 return true;
             }
-            else
-                return false;
-                
-
+            return false;
         }
+        /// <summary>
+        /// получить всех дарителей
+        /// </summary>
+        /// <returns></returns>
         public List<Giver> GetAllGivers()
         {
             return new List<Giver>(_givers);
         }
-        public bool UpdateGiver(int id, string new_name, string new_thing, string new_abilitiesofthething, int new_yearofcreation, string new_team)
+        /// <summary>
+        /// обновить дарителя
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="newName"></param>
+        /// <param name="newBookId"></param>
+        /// <param name="newYearOfCreation"></param>
+        /// <param name="newTeam"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public bool UpdateGiver(int id, string newName, int newBookId, int newYearOfCreation, string newTeam)
         {
-            var givertoupdate = _givers.FirstOrDefault(x=>x.Id == id);
-            if (givertoupdate != null)
+            var giverToUpdate = _givers.FirstOrDefault(x => x.Id == id);
+            if (giverToUpdate != null)
             {
-                if (!string.IsNullOrWhiteSpace(new_name))
-                    givertoupdate.Name = new_name;
-                if (!string.IsNullOrWhiteSpace(new_thing))
-                    givertoupdate.Thing = new_thing;
-                if (!string.IsNullOrWhiteSpace(new_abilitiesofthething))
-                    givertoupdate.AbilitiesOfTheThing = new_abilitiesofthething;
-                if (new_yearofcreation>0)
-                    givertoupdate.YearOfCreation = new_yearofcreation;
-                if (!string.IsNullOrWhiteSpace(new_team))
-                    givertoupdate.AbilitiesOfTheThing = new_team;
+                if (!string.IsNullOrWhiteSpace(newName))
+                    giverToUpdate.Name = newName;
+
+                // ПРОВЕРКА: существует ли новая книга
+                if (newBookId > 0 && !_bookManager.BookExists(newBookId))
+                    throw new ArgumentException($"Книги с ID {newBookId} не существует!");
+
+                if (newBookId > 0)
+                    giverToUpdate.BookId = newBookId;
+
+                if (newYearOfCreation > 0)
+                    giverToUpdate.YearOfCreation = newYearOfCreation;
+
+                if (!string.IsNullOrWhiteSpace(newTeam))
+                    giverToUpdate.Team = newTeam;
+
                 return true;
-            }  
+            }
             return false;
         }
-        public Dictionary<string,List<Giver>> GroupGiversByTeams()
+        /// <summary>
+        /// группировка по командам
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, List<Giver>> GroupGiversByTeams()
         {
-            return _givers.GroupBy(b=> b.Team)
-                .ToDictionary(g=>g.Key,g=>g.ToList());
+            return _givers.GroupBy(g => g.Team)
+                         .ToDictionary(g => g.Key, g => g.ToList());
         }
-        public List<Giver> GetThingsAfterTheYear(int yearofcreation)
+        /// <summary>
+        /// сортировка по году
+        /// </summary>
+        /// <param name="year"></param>
+        /// <returns></returns>
+        public List<Giver> GetGiversWithBooksAfterYear(int year)
         {
-            return _givers.Where(b => b.YearOfCreation > yearofcreation).ToList();
+            return _givers.Where(g => g.YearOfCreation > year).ToList();
         }
-           
-    }  
+
+        /// <summary>
+        /// Метод для получения информации о книге дарителя
+        /// </summary>
+        /// <param name="giverId"></param>
+        /// <returns></returns>
+        public string GetGiverBookInfo(int giverId)
+        {
+            var giver = _givers.FirstOrDefault(g => g.Id == giverId);
+            if (giver != null)
+            {
+                var book = _bookManager.GetBookById(giver.BookId);
+                return book != null ? $"{book.Title} ({book.AbilitiesOfTheBook})" : "Книга не найдена";
+            }
+            return "Даритель не найден";
+        }
+    }
 }
