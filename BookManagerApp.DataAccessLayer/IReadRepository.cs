@@ -1,0 +1,16 @@
+﻿using BookManagerApp.Model;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BookManagerApp.DataAccessLayer
+{
+    public interface IReadRepository<T> where T : IDomainObject 
+    {
+        T[] ReadAll();
+        T ReadById(int id);
+        
+    }
+}

@@ -9,7 +9,7 @@ using BookManagerApp.Model;
 
 
 
-public class Giver
+public class Giver :IDomainObject
 {
     public int Id { get; set; }
     public string Name { get; set; }
@@ -25,7 +25,7 @@ public class Giver
         YearOfCreation = yearOfCreation;
         Team = team;
     }
-
+    public Giver() { }
     // Метод для получения книги (нужен доступ к BookManager)
    
 

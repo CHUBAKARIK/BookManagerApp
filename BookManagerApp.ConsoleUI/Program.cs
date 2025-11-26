@@ -1,19 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using BookManagerApp.DataAccessLayer;
 using BookManagerApp.Logic;
 using BookManagerApp.Model;
+using Ninject;
+
+
 
 namespace BookManagerApp.ConsoleUI
 {
     class Program
     {
-        static BookManager _bookManager = new BookManager();
-        static GiverManager _giverManager = new GiverManager(_bookManager);
+        static BookManager _bookManager;
+        static BookBusinesService _bookBusinesService;
+        static GiverManager _giverManager;
+        static GiverBusinessService _giverBusinessService;
 
         static void Main(string[] args)
+
         {
+
+            IKernel ninjectKernel = new StandardKernel(new SimpleConfigModule());
+
+            // 2. ПОЛУЧАЕМ СЕРВИСЫ
+            _bookManager = ninjectKernel.Get<BookManager>();
+            _bookBusinesService = ninjectKernel.Get<BookBusinesService>();
+            _giverManager = ninjectKernel.Get<GiverManager>();
+            _giverBusinessService = ninjectKernel.Get<GiverBusinessService>();
+
             Console.WriteLine(" Добро пожаловать в систему управления! ");
+
 
             while (true)
             {
@@ -266,7 +283,7 @@ namespace BookManagerApp.ConsoleUI
         /// </summary>
         static void GroupBooksByAuthorUI()
         {
-            var groups = _bookManager.GroupBooksByAuthor();
+            var groups = _bookBusinesService.GroupBooksByAuthor();
             if (groups.Any())
             {
                 Console.WriteLine("\nКНИГИ, СГРУППИРОВАННЫЕ ПО АВТОРАМ:");
@@ -293,7 +310,7 @@ namespace BookManagerApp.ConsoleUI
             Console.Write("\nВведите год: ");
             if (int.TryParse(Console.ReadLine(), out int year))
             {
-                var books = _bookManager.GetBooksPublishedAfterYear(year);
+                var books = _bookBusinesService.GetBooksPublishedAfterYear(year);
                 if (books.Any())
                 {
                     Console.WriteLine($"\nКНИГИ, ВЫШЕДШИЕ ПОСЛЕ {year} ГОДА:");
@@ -434,7 +451,7 @@ namespace BookManagerApp.ConsoleUI
 
         static void GroupGiversByTeamsUI()
         {
-            var groups = _giverManager.GroupGiversByTeams();
+            var groups = _giverBusinessService.GroupGiversByTeams();
             if (groups.Any())
             {
                 Console.WriteLine("\nДАРИТЕЛИ, СГРУППИРОВАННЫЕ ПО КОМАНДАМ:");
@@ -461,7 +478,7 @@ namespace BookManagerApp.ConsoleUI
             Console.Write("\nВведите очки силы: ");
             if (int.TryParse(Console.ReadLine(), out int year))
             {
-                var givers = _giverManager.GetGiversWithBooksAfterYear(year);
+                var givers = _giverBusinessService.GetGiversWithBooksAfterYear(year);
                 if (givers.Any())
                 {
                     Console.WriteLine($"\n информация о тех у кого очков силы больше чем {year} :");

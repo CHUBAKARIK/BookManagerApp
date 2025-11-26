@@ -1,23 +1,29 @@
 using System;
-using System.Collections.Generic; // ДОБАВЬ ЭТУ СТРОКУ
+using System.Collections.Generic; 
 using System.Windows.Forms;
 using BookManagerApp.Logic;
 using BookManagerApp.Model;
+using Ninject;
 
 namespace BookManagerApp.WinFormsUI
 {
     public partial class MainForm : Form
     {
-        private BookManager _bookManager;
-        private GiverManager _giverManager;
+        static BookManager _bookManager;
+        static BookBusinesService _bookBusinesService;
+        static GiverManager _giverManager;
+        static GiverBusinessService _giverBusinessService;
 
         public MainForm()
         {
             InitializeComponent();
 
-            // создаем менеджеры правильно
-            _bookManager = new BookManager();
-            _giverManager = new GiverManager(_bookManager);
+            // СОЗДАЕМ ЗАВИСИМОСТИ ЧЕРЕЗ NINJECT
+            IKernel ninjectKernel = new StandardKernel(new SimpleConfigModule());
+            _bookManager = ninjectKernel.Get<BookManager>();
+            _bookBusinesService = ninjectKernel.Get<BookBusinesService>();
+            _giverManager = ninjectKernel.Get<GiverManager>();
+            _giverBusinessService = ninjectKernel.Get<GiverBusinessService>();
 
             InitializeForm();
             lblField5.Visible = false;
@@ -324,7 +330,7 @@ namespace BookManagerApp.WinFormsUI
             }
             else
             {
-                var groups = _giverManager.GroupGiversByTeams();
+                var groups = _giverBusinessService.GroupGiversByTeams();
                 string result = "Дарители по командам:\n\n";
                 foreach (var group in groups)
                 {
@@ -362,7 +368,7 @@ namespace BookManagerApp.WinFormsUI
                 string year = Microsoft.VisualBasic.Interaction.InputBox("Введите очки силы:", "Поиск Книг", "2000");
                 if (int.TryParse(year, out int yearValue))
                 {
-                    var givers = _giverManager.GetGiversWithBooksAfterYear(yearValue); 
+                    var givers = _giverBusinessService.GetGiversWithBooksAfterYear(yearValue); 
                     string result = $"Книги  с очками силы больше {yearValue} :\n\n";
                     foreach (var giver in givers)
                     {

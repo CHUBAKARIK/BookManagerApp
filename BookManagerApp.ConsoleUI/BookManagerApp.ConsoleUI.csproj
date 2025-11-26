@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BookManagerApp.DataAccessLayer\BookManagerApp.DataAccessLayer.csproj" />
     <ProjectReference Include="..\BookManagerApp.Logic\BookManagerApp.Logic.csproj" />
     <ProjectReference Include="..\BookManagerApp.Model\BookManagerApp.Model.csproj" />
   </ItemGroup>

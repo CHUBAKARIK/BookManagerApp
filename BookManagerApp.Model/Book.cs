@@ -4,7 +4,7 @@ using System.Linq;
 using BookManagerApp.Model;
 namespace BookManagerApp.Model
 {
-    public class Book
+    public class Book :IDomainObject
     {
         public int Id { get; set; }
         public string Title { get; set; }
@@ -25,6 +25,7 @@ namespace BookManagerApp.Model
            
 
         }
+        public Book() { }
 
         // Для красивого отображения в консоли и др.
         public override string ToString()
