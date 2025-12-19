@@ -28,7 +28,7 @@ namespace BookManagerApp.DataAccessLayer
                 context.Books.AddRange(books);
                 context.SaveChanges();
 
-                // тест2
+                //тест
                 var givers = new Giver[]
                 {
                     new Giver { Name = "Аэлин", BookId = 1,

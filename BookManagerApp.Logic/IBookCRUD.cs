@@ -8,8 +8,14 @@ using BookManagerApp.Model;
 
 namespace BookManagerApp.Logic
 {
-    public interface IBookCRUD : IBookRepository
+    public interface IBookCRUD
     {
-        
+        void AddBook(string title, string author, string abilitiesofthebook, int year);
+        bool DeleteBook(int id);
+
+        Book[] GetAllBooks();
+        Book GetBookById(int id);
+        bool UpdateBook(int id, string newTitle, string newAuthor, string NewAbility, int newYear);
+        bool BookExists(int bookId);
     }
 }

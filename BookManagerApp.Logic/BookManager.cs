@@ -8,7 +8,7 @@ using BookManagerApp.DataAccessLayer;
 namespace BookManagerApp.Logic
 {
     
-    public class BookManager 
+    public class BookManager : IBookCRUD
     {
         /// <summary>
         /// ЗАМЕНЯЕМ старый List на репозиторий,private - поле доступно только внутри этого класса
@@ -16,7 +16,7 @@ namespace BookManagerApp.Logic
         // _bookRepository - имя поля (хранит ссылку на репозиторий книг)
         /// </summary>
 
-        private readonly IBookRepository _bookRepository;
+        private readonly IBookRepository _bookrepository;
 
         /// <summary>
         /// Конструктор класса - вызывается при создании объекта BookManager
@@ -24,7 +24,7 @@ namespace BookManagerApp.Logic
 
         public BookManager(IBookRepository bookRepository)
         {
-            _bookRepository = bookRepository;
+            _bookrepository = bookRepository;
         }
 
         /// <summary>
@@ -56,8 +56,8 @@ namespace BookManagerApp.Logic
                 Year = year
             };
 
-            
-            _bookRepository.Add(book);
+
+            _bookrepository.Add(book);
         }
 
         /// <summary>
@@ -73,8 +73,8 @@ namespace BookManagerApp.Logic
                 throw new ArgumentException("ID книги должен быть положительным числом");
             }
 
-           
-            _bookRepository.Delete(id);
+
+            _bookrepository.Delete(id);
 
             
             return true;
@@ -88,7 +88,7 @@ namespace BookManagerApp.Logic
         {
             
            
-            return _bookRepository.ReadAll();
+            return _bookrepository.ReadAll();
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace BookManagerApp.Logic
             }
 
            
-            return _bookRepository.ReadById(id);
+            return _bookrepository.ReadById(id);
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace BookManagerApp.Logic
             }
 
             
-            var bookToUpdate = _bookRepository.ReadById(id);
+            var bookToUpdate = _bookrepository.ReadById(id);
 
           
             if (bookToUpdate != null)
@@ -144,8 +144,8 @@ namespace BookManagerApp.Logic
                 if (newYear > 0)
                     bookToUpdate.Year = newYear;
 
-                
-                _bookRepository.Update(bookToUpdate);
+
+                _bookrepository.Update(bookToUpdate);
                 return true;
             }
             return false; // Книга не найдена
@@ -158,7 +158,7 @@ namespace BookManagerApp.Logic
         public System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<Book>> GroupBooksByAuthor()
         {
             // Получаем все книги из базы данных через репозиторий
-            var books = _bookRepository.ReadAll();
+            var books = _bookrepository.ReadAll();
 
            
             return books.GroupBy(b => b.Author)
@@ -173,7 +173,7 @@ namespace BookManagerApp.Logic
         public Book[] GetBooksPublishedAfterYear(int year)
         {
            
-            var books = _bookRepository.ReadAll();
+            var books = _bookrepository.ReadAll();
 
            
             return books.Where(b => b.Year > year).ToArray();
@@ -192,8 +192,8 @@ namespace BookManagerApp.Logic
                 return false;
             }
 
-            
-            return _bookRepository.Exists(bookId);
+
+            return _bookrepository.Exists(bookId);
         }
     }
 }

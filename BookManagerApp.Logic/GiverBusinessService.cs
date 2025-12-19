@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BookManagerApp.Logic
 {
-    public class GiverBusinessService
+    public class GiverBusinessService : IGiverBUSINESS
     {
         private readonly IGiverRepository _giverRepository;
         private readonly IBookRepository _bookRepository;

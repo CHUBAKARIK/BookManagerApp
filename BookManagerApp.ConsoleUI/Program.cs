@@ -1,37 +1,194 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using BookManagerApp.DataAccessLayer;
-using BookManagerApp.Logic;
-using BookManagerApp.Model;
+﻿using BookManagerApp.Logic;
+using BookManagerApp.Presenter;
+using BookManagerApp.Shared;
 using Ninject;
-
-
 
 namespace BookManagerApp.ConsoleUI
 {
+    /// <summary>
+    /// Реализация View для консольного интерфейса в архитектуре MVP.
+    /// Предоставляет UI для работы с книгами и дарителями через события.
+    /// </summary>
+    public class ConsoleView : ILibraryView
+    {
+        // События для взаимодействия с Presenter'ом
+        public event EventHandler LoadBooks;
+        public event EventHandler AddBook;
+        public event EventHandler UpdateBook;
+        public event EventHandler DeleteBook;
+        public event EventHandler GroupBooksByAuthor;
+        public event EventHandler BooksAfterYear;
+
+        public event EventHandler LoadGivers;
+        public event EventHandler AddGiver;
+        public event EventHandler UpdateGiver;
+        public event EventHandler DeleteGiver;
+        public event EventHandler GroupGiversByTeam;
+        public event EventHandler GiversWithPower;
+
+        /// <summary>
+        /// Внутренние поля для хранения данных формы
+        /// </summary>
+        private string _field1 = "";
+        private string _field2 = "";
+        private string _field3 = "";
+        private string _field4 = "";
+        private int _selectedBookId = 0;
+        private int _selectedGiverId = 0;
+
+        /// <summary>
+        /// Установка значений полей формы
+        /// </summary>
+        /// <param name="value"></param>
+        public void SetField1(string value) => _field1 = value;
+        public void SetField2(string value) => _field2 = value;
+        public void SetField3(string value) => _field3 = value;
+        public void SetField4(string value) => _field4 = value;
+        public void SetSelectedBookId(int id) => _selectedBookId = id;
+        public void SetSelectedGiverId(int id) => _selectedGiverId = id;
+
+        /// <summary>
+        /// Получение данных для книг
+        /// </summary>
+        /// <returns></returns>
+        public string GetBookTitle() => _field1;
+        public string GetBookAuthor() => _field2;
+        public string GetBookAbility() => _field3;
+        public string GetBookYear() => _field4;
+
+        /// <summary>
+        /// Получение данных для дарителей
+        /// </summary>
+        /// <returns></returns>
+        public string GetGiverName() => _field1;
+        public string GetGiverBookId() => _field2;
+        public string GetGiverPower() => _field3;
+        public string GetGiverTeam() => _field4;
+
+        /// <summary>
+        /// Получение выбранных ID
+        /// </summary>
+        /// <returns></returns>
+        public int GetSelectedBookId() => _selectedBookId;
+        public int GetSelectedGiverId() => _selectedGiverId;
+
+        /// <summary>
+        /// Отображает список книг в консоли.
+        /// </summary>
+        public void ShowBooks(List<BookManagerApp.Shared.models.BookDto> books)
+        {
+            Console.Clear();
+            if (books.Any())
+            {
+                Console.WriteLine("\nСПИСОК ВСЕХ КНИГ:");
+                foreach (var book in books)
+                {
+                    Console.WriteLine($"   ID: {book.Id}, \"{book.Title}\" - {book.Author} ({book.Year}г., {book.AbilitiesOfTheBook})");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Список книг пуст");
+            }
+            WaitForKey();
+        }
+
+        /// <summary>
+        /// Отображает список дарителей в консоли.
+        /// </summary>
+        public void ShowGivers(List<BookManagerApp.Shared.models.GiverDto> givers)
+        {
+            Console.Clear();
+            if (givers.Any())
+            {
+                Console.WriteLine("\nСПИСОК ВСЕХ ДАРИТЕЛЕЙ:");
+                foreach (var giver in givers)
+                {
+                    Console.WriteLine($"   ID: {giver.Id}, Имя: {giver.Name}, ID книги: {giver.BookId}, Очки силы: {giver.YearOfCreation}, Команда: {giver.Team}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Список дарителей пуст.");
+            }
+            WaitForKey();
+        }
+
+        /// <summary>
+        /// Выводит информационное сообщение в консоль.
+        /// </summary>
+        public void ShowMessage(string message)
+        {
+            Console.WriteLine("\n" + message);
+            WaitForKey();
+        }
+
+        /// <summary>
+        /// Очищает все поля ввода формы.
+        /// </summary>
+        public void ClearForm()
+        {
+            _field1 = _field2 = _field3 = _field4 = "";
+        }
+
+        /// <summary>
+        /// Методы для вызова событий книг
+        /// </summary>
+        public void InvokeLoadBooks() => LoadBooks?.Invoke(this, EventArgs.Empty);
+        public void InvokeAddBook() => AddBook?.Invoke(this, EventArgs.Empty);
+        public void InvokeUpdateBook() => UpdateBook?.Invoke(this, EventArgs.Empty);
+        public void InvokeDeleteBook() => DeleteBook?.Invoke(this, EventArgs.Empty);
+        public void InvokeGroupBooksByAuthor() => GroupBooksByAuthor?.Invoke(this, EventArgs.Empty);
+        public void InvokeBooksAfterYear() => BooksAfterYear?.Invoke(this, EventArgs.Empty);
+
+        /// <summary>
+        /// Методы для вызова событий дарителей
+        /// </summary>
+        public void InvokeLoadGivers() => LoadGivers?.Invoke(this, EventArgs.Empty);
+        public void InvokeAddGiver() => AddGiver?.Invoke(this, EventArgs.Empty);
+        public void InvokeUpdateGiver() => UpdateGiver?.Invoke(this, EventArgs.Empty);
+        public void InvokeDeleteGiver() => DeleteGiver?.Invoke(this, EventArgs.Empty);
+        public void InvokeGroupGiversByTeam() => GroupGiversByTeam?.Invoke(this, EventArgs.Empty);
+        public void InvokeGiversWithPower() => GiversWithPower?.Invoke(this, EventArgs.Empty);
+
+        /// <summary>
+        /// Ожидает нажатия любой клавиши для продолжения.
+        /// </summary>
+        private void WaitForKey()
+        {
+            Console.WriteLine("\n⏎ Нажмите любую клавишу для продолжения...");
+            Console.ReadKey();
+        }
+
+
+
+    }
+
+    /// <summary>
+    /// Основной класс консольного приложения.
+    /// Управляет пользовательским интерфейсом и взаимодействием с View.
+    /// </summary>
     class Program
     {
-        static BookManager _bookManager;
-        static BookBusinesService _bookBusinesService;
-        static GiverManager _giverManager;
-        static GiverBusinessService _giverBusinessService;
+        private static ConsoleView _consoleView;
+        
 
+        /// <summary>
+        /// Точка входа в приложение. Инициализирует компоненты MVP и запускает главный цикл.
+        /// </summary>
         static void Main(string[] args)
-
         {
-
+            // Настройка Dependency Injection
             IKernel ninjectKernel = new StandardKernel(new SimpleConfigModule());
+            var library = ninjectKernel.Get<ILibraryFacade>();
 
-            // 2. ПОЛУЧАЕМ СЕРВИСЫ
-            _bookManager = ninjectKernel.Get<BookManager>();
-            _bookBusinesService = ninjectKernel.Get<BookBusinesService>();
-            _giverManager = ninjectKernel.Get<GiverManager>();
-            _giverBusinessService = ninjectKernel.Get<GiverBusinessService>();
+            // Создание View и Presenter'а
+            _consoleView = new ConsoleView();
+             var presenter = new LibraryPresenter(_consoleView, library);
 
             Console.WriteLine(" Добро пожаловать в систему управления! ");
 
-
+            // Главный цикл приложения
             while (true)
             {
                 ShowMainMenu();
@@ -57,36 +214,35 @@ namespace BookManagerApp.ConsoleUI
         }
 
         /// <summary>
-        /// ГЛАВНОЕ МЕНЮ - выбор сущности
+        /// Отображает главное меню приложения.
         /// </summary>
         static void ShowMainMenu()
         {
             Console.Clear();
             Console.WriteLine("ГЛАВНОЕ МЕНЮ ");
-            Console.WriteLine("1.Работа с книгами ");
-            Console.WriteLine("2.Работа с дарителями");
+            Console.WriteLine("1. Работа с книгами ");
+            Console.WriteLine("2. Работа с дарителями");
             Console.WriteLine("0. Выход ");
 
             Console.Write("Выберите сущность для работы: ");
         }
 
         /// <summary>
-        /// МЕНЮ ДЛЯ РАБОТЫ С КНИГАМИ
+        /// Меню для работы с книгами.
         /// </summary>
         static void WorkWithBooks()
         {
             while (true)
             {
                 Console.Clear();
-
                 Console.WriteLine("РАБОТА С КНИГАМИ");
-                Console.WriteLine("1.Добавить книгу");
-                Console.WriteLine("2.Показать все книги");
-                Console.WriteLine("3.Обновить книгу ");
-                Console.WriteLine("4.Удалить книгу");
-                Console.WriteLine("5.Группировка по авторам");
-                Console.WriteLine("6.Книги после указанного года");
-                Console.WriteLine("0.Назад в главное меню");
+                Console.WriteLine("1. Добавить книгу");
+                Console.WriteLine("2. Показать все книги");
+                Console.WriteLine("3. Обновить книгу ");
+                Console.WriteLine("4. Удалить книгу");
+                Console.WriteLine("5. Группировка по авторам");
+                Console.WriteLine("6. Книги после указанного года");
+                Console.WriteLine("0. Назад в главное меню");
                 Console.Write("Выберите действие: ");
 
                 var choice = Console.ReadLine();
@@ -122,7 +278,7 @@ namespace BookManagerApp.ConsoleUI
         }
 
         /// <summary>
-        /// МЕНЮ ДЛЯ РАБОТЫ С ДАРИТЕЛЯМИ
+        /// Меню для работы с дарителями.
         /// </summary>
         static void WorkWithGivers()
         {
@@ -130,13 +286,13 @@ namespace BookManagerApp.ConsoleUI
             {
                 Console.Clear();
                 Console.WriteLine("РАБОТА С ДАРИТЕЛЯМИ");
-                Console.WriteLine("1.Добавить дарителя ");
-                Console.WriteLine("2.Показать всех дарителей");
-                Console.WriteLine("3.Обновить дарителя");
-                Console.WriteLine("4.Удалить дарителя");
-                Console.WriteLine("5.Группировка по командам");
-                Console.WriteLine("6.Сортировка по очкам силы");
-                Console.WriteLine("0.Назад в главное меню");
+                Console.WriteLine("1. Добавить дарителя ");
+                Console.WriteLine("2. Показать всех дарителей");
+                Console.WriteLine("3. Обновить дарителя");
+                Console.WriteLine("4. Удалить дарителя");
+                Console.WriteLine("5. Группировка по командам");
+                Console.WriteLine("6. Сортировка по очкам силы");
+                Console.WriteLine("0. Назад в главное меню");
                 Console.Write("Выберите действие:");
 
                 var choice = Console.ReadLine();
@@ -159,7 +315,7 @@ namespace BookManagerApp.ConsoleUI
                         GroupGiversByTeamsUI();
                         break;
                     case "6":
-                        FindThingsAfterYearUI();
+                        FindGiversWithPowerUI();
                         break;
                     case "0":
                         return;
@@ -172,337 +328,211 @@ namespace BookManagerApp.ConsoleUI
         }
 
         /// <summary>
-        /// МЕТОДЫ ДЛЯ РАБОТЫ С КНИГАМИ
+        /// Добавление новой книги через пользовательский ввод.
         /// </summary>
         static void AddBookUI()
         {
+            Console.Clear();
             Console.WriteLine("\nДОБАВЛЕНИЕ НОВОЙ КНИГИ");
             Console.Write("Введите название книги: ");
-            var title = Console.ReadLine();
+            _consoleView.SetField1(Console.ReadLine());
             Console.Write("Введите автора: ");
-            var author = Console.ReadLine();
+            _consoleView.SetField2(Console.ReadLine());
             Console.Write("Введите способность книги: ");
-            var abilitiesofthebook = Console.ReadLine();
+            _consoleView.SetField3(Console.ReadLine());
             Console.Write("Введите год издания: ");
+            _consoleView.SetField4(Console.ReadLine());
 
-            if (int.TryParse(Console.ReadLine(), out int year))
-            {
-                try
-                {
-                    _bookManager.AddBook(title, author, abilitiesofthebook, year);
-                    Console.WriteLine("Книга успешно добавлена!");
-                }
-                catch (ArgumentException ex)
-                {
-                    Console.WriteLine($"Ошибка: {ex.Message}");
-                }
-            }
-            else
-            {
-                Console.WriteLine("Ошибка: Неверный формат года.");
-            }
-            WaitForKey();
+            _consoleView.InvokeAddBook();
         }
+
         /// <summary>
-        /// получить все книги 
+        /// Отображение всех книг.
         /// </summary>
         static void ShowAllBooksUI()
         {
-            var books = _bookManager.GetAllBooks();
-            if (books.Any())
-            {
-                Console.WriteLine("\nСПИСОК ВСЕХ КНИГ:");
-                foreach (var book in books)
-                {
-                    Console.WriteLine($"   {book}");
-                }
-            }
-            else
-            {
-                Console.WriteLine("Список книг пуст");
-            }
-            WaitForKey();
+            _consoleView.InvokeLoadBooks();
         }
+
         /// <summary>
-        /// обновить книги
+        /// Обновление информации о книге.
         /// </summary>
         static void UpdateBookUI()
         {
-            Console.Write("\n✏Введите ID книги для обновления: ");
+            Console.Clear();
+            Console.Write("\n✏ Введите ID книги для обновления: ");
             if (int.TryParse(Console.ReadLine(), out int id))
             {
-                Console.Write("Введите новое название (оставьте пустым, чтобы не менять): ");
-                var newTitle = Console.ReadLine();
-                Console.Write("Введите нового автора (оставьте пустым, чтобы не менять): ");
-                var newAuthor = Console.ReadLine();
-                Console.Write("Введите новую способность (оставьте пустым, чтобы не менять): ");
-                var NewAbility = Console.ReadLine();
-                Console.Write("Введите новый год (оставьте 0, чтобы не менять): ");
-                int.TryParse(Console.ReadLine(), out int newYear);
+                _consoleView.SetSelectedBookId(id);
 
-                if (_bookManager.UpdateBook(id, newTitle, newAuthor, NewAbility, newYear))
-                {
-                    Console.WriteLine("Книга успешно обновлена!");
-                }
-                else
-                {
-                    Console.WriteLine("Ошибка: Книга с таким ID не найдена.");
-                }
+                Console.Write("Введите новое название (оставьте пустым, чтобы не менять): ");
+                _consoleView.SetField1(Console.ReadLine());
+                Console.Write("Введите нового автора (оставьте пустым, чтобы не менять): ");
+                _consoleView.SetField2(Console.ReadLine());
+                Console.Write("Введите новую способность (оставьте пустым, чтобы не менять): ");
+                _consoleView.SetField3(Console.ReadLine());
+                Console.Write("Введите новый год (оставьте пустым, чтобы не менять): ");
+                _consoleView.SetField4(Console.ReadLine());
+
+                _consoleView.InvokeUpdateBook();
             }
             else
             {
                 Console.WriteLine("Ошибка: Неверный формат ID.");
+                WaitForKey();
             }
-            WaitForKey();
         }
+
         /// <summary>
-        /// удалить книги
+        /// Удаление книги по ID.
         /// </summary>
         static void DeleteBookUI()
         {
+            Console.Clear();
             Console.Write("\nВведите ID книги для удаления: ");
             if (int.TryParse(Console.ReadLine(), out int id))
             {
-                if (_bookManager.DeleteBook(id))
-                {
-                    Console.WriteLine("Книга успешно удалена!");
-                }
-                else
-                {
-                    Console.WriteLine("Ошибка: Книга с таким ID не найдена.");
-                }
+                _consoleView.SetSelectedBookId(id);
+                _consoleView.InvokeDeleteBook();
             }
             else
             {
                 Console.WriteLine("Ошибка: Неверный формат ID.");
+                WaitForKey();
             }
-            WaitForKey();
         }
+
         /// <summary>
-        /// группировка по авторам
+        /// Группировка книг по авторам.
         /// </summary>
         static void GroupBooksByAuthorUI()
         {
-            var groups = _bookBusinesService.GroupBooksByAuthor();
-            if (groups.Any())
-            {
-                Console.WriteLine("\nКНИГИ, СГРУППИРОВАННЫЕ ПО АВТОРАМ:");
-                foreach (var group in groups)
-                {
-                    Console.WriteLine($"\nАвтор: {group.Key}");
-                    foreach (var book in group.Value)
-                    {
-                        Console.WriteLine($"   - {book.Title} ({book.Year}г. , {book.AbilitiesOfTheBook})");
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine("ℹСписок книг пуст.");
-            }
-            WaitForKey();
+            _consoleView.InvokeGroupBooksByAuthor();
         }
+
         /// <summary>
-        /// сортирвока по году
+        /// Поиск книг, изданных после указанного года.
         /// </summary>
         static void FindBooksAfterYearUI()
         {
+            Console.Clear();
             Console.Write("\nВведите год: ");
             if (int.TryParse(Console.ReadLine(), out int year))
             {
-                var books = _bookBusinesService.GetBooksPublishedAfterYear(year);
-                if (books.Any())
-                {
-                    Console.WriteLine($"\nКНИГИ, ВЫШЕДШИЕ ПОСЛЕ {year} ГОДА:");
-                    foreach (var book in books)
-                    {
-                        Console.WriteLine($"   {book}");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"ℹКниг, вышедших после {year} года, не найдено.");
-                }
+                Console.WriteLine($"Книги после {year} года будут показаны...");
+                _consoleView.InvokeBooksAfterYear();
             }
             else
             {
                 Console.WriteLine("Ошибка: Неверный формат года.");
+                WaitForKey();
             }
-            WaitForKey();
         }
 
         /// <summary>
-        /// МЕТОДЫ ДЛЯ РАБОТЫ С ДАРИТЕЛЯМИ (ОБНОВЛЕННЫЕ)
+        /// Добавление нового дарителя.
         /// </summary>
         static void AddGiverUI()
         {
+            Console.Clear();
             Console.WriteLine("\nДОБАВЛЕНИЕ НОВОГО ДАРИТЕЛЯ");
             Console.Write("Введите имя дарителя: ");
-            var name = Console.ReadLine();
-
+            _consoleView.SetField1(Console.ReadLine());
             Console.Write("Введите ID книги: ");
-            if (!int.TryParse(Console.ReadLine(), out int bookId))
-            {
-                Console.WriteLine("Ошибка: Неверный формат ID книги.");
-                WaitForKey();
-                return;
-            }
-
-            Console.Write("Введите очик силы: ");
-            if (!int.TryParse(Console.ReadLine(), out int year))
-            {
-                Console.WriteLine("Ошибка: Неверный формат очков силы.");
-                WaitForKey();
-                return;
-            }
-
+            _consoleView.SetField2(Console.ReadLine());
+            Console.Write("Введите очки силы: ");
+            _consoleView.SetField3(Console.ReadLine());
             Console.Write("Введите команду дарителя: ");
-            var team = Console.ReadLine();
+            _consoleView.SetField4(Console.ReadLine());
 
-            try
-            {
-                _giverManager.AddGiver(name, bookId, year, team);
-                Console.WriteLine("Даритель успешно добавлен!");
-            }
-            catch (ArgumentException ex)
-            {
-                Console.WriteLine($"Ошибка: {ex.Message}");
-            }
-            WaitForKey();
-        }
-
-        static void ShowAllGiversUI()
-        {
-            var givers = _giverManager.GetAllGivers();
-            if (givers.Any())
-            {
-                Console.WriteLine("\nСПИСОК ВСЕХ ДАРИТЕЛЕЙ:");
-                foreach (var giver in givers)
-                {
-                    var book = _bookManager.GetBookById(giver.BookId);
-                    string bookInfo = book != null ? $"{book.Title} ({book.AbilitiesOfTheBook})" : "Книга не найдена";
-                    Console.WriteLine($"   ID: {giver.Id}, Имя: {giver.Name}, Книга: {bookInfo}, очки силы: {giver.YearOfCreation}, Команда: {giver.Team}");
-                }
-            }
-            else
-            {
-                Console.WriteLine("Список дарителей пуст.");
-            }
-            WaitForKey();
-        }
-
-        static void UpdateGiverUI()
-        {
-            Console.Write("\n✏Введите ID дарителя для обновления: ");
-            if (int.TryParse(Console.ReadLine(), out int id))
-            {
-                Console.Write("Введите новое имя (оставьте пустым, чтобы не менять): ");
-                var newName = Console.ReadLine();
-                Console.Write("Введите новый ID книги (оставьте 0, чтобы не менять): ");
-                int.TryParse(Console.ReadLine(), out int newBookId);
-                Console.Write("Введите новые очки силы (оставьте 0, чтобы не менять): ");
-                int.TryParse(Console.ReadLine(), out int newYear);
-                Console.Write("Введите новую команду (оставьте пустым, чтобы не менять): ");
-                var newTeam = Console.ReadLine();
-
-                try
-                {
-                    if (_giverManager.UpdateGiver(id, newName, newBookId, newYear, newTeam))
-                    {
-                        Console.WriteLine("Даритель успешно обновлен!");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Ошибка: Даритель с таким ID не найден.");
-                    }
-                }
-                catch (ArgumentException ex)
-                {
-                    Console.WriteLine($"Ошибка: {ex.Message}");
-                }
-            }
-            else
-            {
-                Console.WriteLine("Ошибка: Неверный формат ID.");
-            }
-            WaitForKey();
-        }
-
-        static void DeleteGiverUI()
-        {
-            Console.Write("\nВведите ID дарителя для удаления: ");
-            if (int.TryParse(Console.ReadLine(), out int id))
-            {
-                if (_giverManager.DeleteGiver(id))
-                {
-                    Console.WriteLine("Даритель успешно удален!");
-                }
-                else
-                {
-                    Console.WriteLine("Ошибка: Даритель с таким ID не найден.");
-                }
-            }
-            else
-            {
-                Console.WriteLine("Ошибка: Неверный формат ID.");
-            }
-            WaitForKey();
-        }
-
-        static void GroupGiversByTeamsUI()
-        {
-            var groups = _giverBusinessService.GroupGiversByTeams();
-            if (groups.Any())
-            {
-                Console.WriteLine("\nДАРИТЕЛИ, СГРУППИРОВАННЫЕ ПО КОМАНДАМ:");
-                foreach (var group in groups)
-                {
-                    Console.WriteLine($"\n Команда : {group.Key}");
-                    foreach (var giver in group.Value)
-                    {
-                        var book = _bookManager.GetBookById(giver.BookId);
-                        string bookTitle = book?.Title ?? "Неизвестная книга";
-                        Console.WriteLine($"   - {giver.Name} (книга: {bookTitle})");
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine("Список дарителей пуст.");
-            }
-            WaitForKey();
-        }
-
-        static void FindThingsAfterYearUI()
-        {
-            Console.Write("\nВведите очки силы: ");
-            if (int.TryParse(Console.ReadLine(), out int year))
-            {
-                var givers = _giverBusinessService.GetGiversWithBooksAfterYear(year);
-                if (givers.Any())
-                {
-                    Console.WriteLine($"\n информация о тех у кого очков силы больше чем {year} :");
-                    foreach (var giver in givers)
-                    {
-                        var book = _bookManager.GetBookById(giver.BookId);
-                        string bookTitle = book?.Title ?? "Неизвестная книга";
-                        Console.WriteLine($"   {giver.Name} - {bookTitle} ({giver.YearOfCreation} очков силы.)");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"Очков силы больше {year}  не найдено.");
-                }
-            }
-            else
-            {
-                Console.WriteLine("Ошибка: Неверный формат очков силы.");
-            }
-            WaitForKey();
+            _consoleView.InvokeAddGiver();
         }
 
         /// <summary>
-        /// ключ ожидания
+        /// Отображение всех дарителей.
+        /// </summary>
+        static void ShowAllGiversUI()
+        {
+            _consoleView.InvokeLoadGivers();
+        }
+
+        /// <summary>
+        /// Обновление информации о дарителе.
+        /// </summary>
+        static void UpdateGiverUI()
+        {
+            Console.Clear();
+            Console.Write("\n✏ Введите ID дарителя для обновления: ");
+            if (int.TryParse(Console.ReadLine(), out int id))
+            {
+                _consoleView.SetSelectedGiverId(id);
+
+                Console.Write("Введите новое имя (оставьте пустым, чтобы не менять): ");
+                _consoleView.SetField1(Console.ReadLine());
+                Console.Write("Введите новый ID книги (оставьте пустым, чтобы не менять): ");
+                _consoleView.SetField2(Console.ReadLine());
+                Console.Write("Введите новые очки силы (оставьте пустым, чтобы не менять): ");
+                _consoleView.SetField3(Console.ReadLine());
+                Console.Write("Введите новую команду (оставьте пустым, чтобы не менять): ");
+                _consoleView.SetField4(Console.ReadLine());
+
+                _consoleView.InvokeUpdateGiver();
+            }
+            else
+            {
+                Console.WriteLine("Ошибка: Неверный формат ID.");
+                WaitForKey();
+            }
+        }
+
+        /// <summary>
+        /// Удаление дарителя по ID.
+        /// </summary>
+        static void DeleteGiverUI()
+        {
+            Console.Clear();
+            Console.Write("\nВведите ID дарителя для удаления: ");
+            if (int.TryParse(Console.ReadLine(), out int id))
+            {
+                _consoleView.SetSelectedGiverId(id);
+                _consoleView.InvokeDeleteGiver();
+            }
+            else
+            {
+                Console.WriteLine("Ошибка: Неверный формат ID.");
+                WaitForKey();
+            }
+        }
+
+        /// <summary>
+        /// Группировка дарителей по командам.
+        /// </summary>
+        static void GroupGiversByTeamsUI()
+        {
+            _consoleView.InvokeGroupGiversByTeam();
+        }
+
+        /// <summary>
+        /// Поиск дарителей с очками силы больше указанного значения.
+        /// </summary>
+        static void FindGiversWithPowerUI()
+        {
+            Console.Clear();
+            Console.Write("\nВведите минимальные очки силы: ");
+            if (int.TryParse(Console.ReadLine(), out int minPower))
+            {
+                Console.WriteLine($"Дарители с очками силы больше {minPower} будут показаны...");
+                _consoleView.InvokeGiversWithPower();
+            }
+            else
+            {
+                Console.WriteLine("Ошибка: Неверный формат очков силы.");
+                WaitForKey();
+            }
+        }
+
+        /// <summary>
+        /// Ожидание нажатия клавиши для продолжения работы.
         /// </summary>
         static void WaitForKey()
         {

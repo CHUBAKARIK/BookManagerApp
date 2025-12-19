@@ -1,391 +1,361 @@
-using System;
-using System.Collections.Generic; 
-using System.Windows.Forms;
-using BookManagerApp.Logic;
+п»їusing BookManagerApp.Logic;
 using BookManagerApp.Model;
+using BookManagerApp.Presenter;
+using BookManagerApp.Shared.models;
+using BookManagerApp.Shared;
 using Ninject;
 
 namespace BookManagerApp.WinFormsUI
 {
-    public partial class MainForm : Form
+    /// <summary>
+    /// Р“Р»Р°РІРЅР°СЏ С„РѕСЂРјР° РїСЂРёР»РѕР¶РµРЅРёСЏ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РєРЅРёРіР°РјРё Рё РґР°СЂРёС‚РµР»СЏРјРё
+    /// Р РµР°Р»РёР·СѓРµС‚ РёРЅС‚РµСЂС„РµР№СЃ ILibraryView РґР»СЏ Р°СЂС…РёС‚РµРєС‚СѓСЂС‹ MVP
+    /// </summary>
+    public partial class MainForm : Form, ILibraryView
     {
-        static BookManager _bookManager;
-        static BookBusinesService _bookBusinesService;
-        static GiverManager _giverManager;
-        static GiverBusinessService _giverBusinessService;
+        private LibraryPresenter _presenter;
 
+        public event EventHandler LoadBooks;
+        public event EventHandler AddBook;
+        public event EventHandler UpdateBook;
+        public event EventHandler DeleteBook;
+        public event EventHandler GroupBooksByAuthor;
+        public event EventHandler BooksAfterYear;
+
+        public event EventHandler LoadGivers;
+        public event EventHandler AddGiver;
+        public event EventHandler UpdateGiver;
+        public event EventHandler DeleteGiver;
+        public event EventHandler GroupGiversByTeam;
+        public event EventHandler GiversWithPower;
+
+        /// <summary>
+        /// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РЅРѕРІСѓСЋ С„РѕСЂРјСѓ Рё СЃРѕР·РґР°РµС‚ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё С‡РµСЂРµР· Ninject
+        /// </summary>
         public MainForm()
         {
             InitializeComponent();
 
-            // СОЗДАЕМ ЗАВИСИМОСТИ ЧЕРЕЗ NINJECT
             IKernel ninjectKernel = new StandardKernel(new SimpleConfigModule());
-            _bookManager = ninjectKernel.Get<BookManager>();
-            _bookBusinesService = ninjectKernel.Get<BookBusinesService>();
-            _giverManager = ninjectKernel.Get<GiverManager>();
-            _giverBusinessService = ninjectKernel.Get<GiverBusinessService>();
+
+            // 2. РџРѕР»СѓС‡Р°РµРј ILibraryFacade С‡РµСЂРµР· Ninject
+            var library = ninjectKernel.Get<ILibraryFacade>();
+
+            // 3. РЎРѕР·РґР°РµРј Presenter Р’Р РЈР§РќРЈР® (РЅРµ С‡РµСЂРµР· Ninject!)
+            _presenter = new LibraryPresenter(this, library);
 
             InitializeForm();
             lblField5.Visible = false;
             txtField5.Visible = false;
         }
 
-        private void InitializeForm()
+        /// <summary>
+        /// Р’РѕР·РІСЂР°С‰Р°РµС‚ РЅР°Р·РІР°РЅРёРµ РєРЅРёРіРё РёР· С‚РµРєСЃС‚РѕРІРѕРіРѕ РїРѕР»СЏ 1
+        /// </summary>
+        public string GetBookTitle() => txtField1.Text;
+
+        /// <summary>
+        /// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р°РІС‚РѕСЂР° РєРЅРёРіРё РёР· С‚РµРєСЃС‚РѕРІРѕРіРѕ РїРѕР»СЏ 2
+        /// </summary>
+        public string GetBookAuthor() => txtField2.Text;
+
+        /// <summary>
+        /// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРѕСЃРѕР±РЅРѕСЃС‚СЊ РєРЅРёРіРё РёР· С‚РµРєСЃС‚РѕРІРѕРіРѕ РїРѕР»СЏ 3
+        /// </summary>
+        public string GetBookAbility() => txtField3.Text;
+
+        /// <summary>
+        /// Р’РѕР·РІСЂР°С‰Р°РµС‚ РіРѕРґ РёР·РґР°РЅРёСЏ РєРЅРёРіРё РёР· С‚РµРєСЃС‚РѕРІРѕРіРѕ РїРѕР»СЏ 4
+        /// </summary>
+        public string GetBookYear() => txtField4.Text;
+
+        /// <summary>
+        /// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РґР°СЂРёС‚РµР»СЏ РёР· С‚РµРєСЃС‚РѕРІРѕРіРѕ РїРѕР»СЏ 1
+        /// </summary>
+        public string GetGiverName() => txtField1.Text;
+
+        /// <summary>
+        /// Р’РѕР·РІСЂР°С‰Р°РµС‚ ID РєРЅРёРіРё РґР°СЂРёС‚РµР»СЏ РёР· С‚РµРєСЃС‚РѕРІРѕРіРѕ РїРѕР»СЏ 2
+        /// </summary>
+        public string GetGiverBookId() => txtField2.Text;
+
+        /// <summary>
+        /// Р’РѕР·РІСЂР°С‰Р°РµС‚ РѕС‡РєРё СЃРёР»С‹ РґР°СЂРёС‚РµР»СЏ РёР· С‚РµРєСЃС‚РѕРІРѕРіРѕ РїРѕР»СЏ 3
+        /// </summary>
+        public string GetGiverPower() => txtField3.Text;
+
+        /// <summary>
+        /// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕРјР°РЅРґСѓ РґР°СЂРёС‚РµР»СЏ РёР· С‚РµРєСЃС‚РѕРІРѕРіРѕ РїРѕР»СЏ 4
+        /// </summary>
+        public string GetGiverTeam() => txtField4.Text;
+
+        /// <summary>
+        /// РџРѕР»СѓС‡Р°РµС‚ ID РІС‹Р±СЂР°РЅРЅРѕР№ РєРЅРёРіРё РёР· DataGridView
+        /// </summary>
+        public int GetSelectedBookId()
         {
-            // Инициализация выпадающего списка
-            cmbEntityType.Items.Add("Книги");
-            cmbEntityType.Items.Add("Дарители");
-            cmbEntityType.SelectedIndex = 0;
-            cmbEntityType.SelectedIndexChanged += cmbEntityType_SelectedIndexChanged;
-
-            // Настройка кнопок
-            btnAdd.Click += btnAdd_Click;
-            btnUpdate.Click += btnUpdate_Click;
-            btnDelete.Click += btnDelete_Click;
-            btnBusiness1.Click += btnBusiness1_Click;
-            btnBusiness2.Click += btnBusiness2_Click;
-
-            // Настройка DataGridView
-            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridView1.SelectionChanged += dataGridView1_SelectionChanged;
-
-            // Загрузка начальных данных
-            LoadBooks();
-        }
-
-        private void cmbEntityType_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            ClearFields();
-            if (cmbEntityType.SelectedItem.ToString() == "Книги")
+            if (cmbEntityType.SelectedItem?.ToString() == "РљРЅРёРіРё" &&
+                dataGridView1.SelectedRows.Count > 0)
             {
-                LoadBooks();
-                UpdateBookControls();
+                if (dataGridView1.SelectedRows[0].DataBoundItem is Book book)
+                {
+                    return book.Id;
+                }
             }
-            else
+            return 0;
+        }
+
+        /// <summary>
+        /// РџРѕР»СѓС‡Р°РµС‚ ID РІС‹Р±СЂР°РЅРЅРѕРіРѕ РґР°СЂРёС‚РµР»СЏ РёР· DataGridView
+        /// </summary>
+        public int GetSelectedGiverId()
+        {
+            if (cmbEntityType.SelectedItem?.ToString() == "Р”Р°СЂРёС‚РµР»Рё" &&
+                dataGridView1.SelectedRows.Count > 0)
             {
-                LoadGivers();
-                UpdateGiverControls();
+                if (dataGridView1.SelectedRows[0].DataBoundItem is GiverDisplay giverDisplay)
+                {
+                    return giverDisplay.Id;
+                }
             }
+            return 0;
         }
 
-        private void UpdateBookControls()
+        /// <summary>
+        /// РћС‚РѕР±СЂР°Р¶Р°РµС‚ СЃРїРёСЃРѕРє РєРЅРёРі РІ DataGridView
+        /// </summary>
+        public void ShowBooks(List<BookDto> bookDtos)
         {
-            lblField1.Text = "Название:";
-            lblField2.Text = "Автор:";
-            lblField3.Text = "Способность:";
-            lblField4.Text = "Год:";
+            var books = bookDtos.Select(dto => new Book
+            {
+                Id = dto.Id,
+                Title = dto.Title,
+                Author = dto.Author,
+                AbilitiesOfTheBook = dto.AbilitiesOfTheBook,
+                Year = dto.Year
+            }).ToList();
 
-            // Показываем только первые 4 поля для книг
-            lblField1.Visible = true;
-            txtField1.Visible = true;
-            lblField2.Visible = true;
-            txtField2.Visible = true;
-            lblField3.Visible = true;
-            txtField3.Visible = true;
-            lblField4.Visible = true;
-            txtField4.Visible = true;
-
-            // Скрываем поле команды (поле 5) для книг
-            lblField5.Visible = false;
-            txtField5.Visible = false;
-        }
-
-        private void UpdateGiverControls()
-        {
-            // для дарителей теперь другие поля
-            lblField1.Text = "Имя:";
-            lblField2.Text = "ID книги:"; // Теперь вводим ID книги, а не название
-            lblField3.Text = "Очки Силы:";
-            lblField4.Text = "Команда:";
-
-            // Скрываем поле 5 для дарителей тоже
-            lblField5.Visible = false;
-            txtField5.Visible = false;
-
-            // Показываем только 4 поля для дарителей
-            lblField1.Visible = true;
-            txtField1.Visible = true;
-            lblField2.Visible = true;
-            txtField2.Visible = true;
-            lblField3.Visible = true;
-            txtField3.Visible = true;
-            lblField4.Visible = true;
-            txtField4.Visible = true;
-        }
-
-        private void LoadBooks()
-        {
-            var books = _bookManager.GetAllBooks();
             dataGridView1.DataSource = books;
         }
 
-        private void LoadGivers()
+        /// <summary>
+        /// РћС‚РѕР±СЂР°Р¶Р°РµС‚ СЃРїРёСЃРѕРє РґР°СЂРёС‚РµР»РµР№ РІ DataGridView
+        /// </summary>
+        public void ShowGivers(List<GiverDto> giverDtos)
         {
-            // Создаем список для отображения
             var giversDisplay = new List<GiverDisplay>();
-            var givers = _giverManager.GetAllGivers();
 
-            foreach (var giver in givers)
+            foreach (var dto in giverDtos)
             {
-                var book = _bookManager.GetBookById(giver.BookId);
+                // Р—Р°РїСЂР°С€РёРІР°РµРј РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РєРЅРёРіРµ С‡РµСЂРµР· Presenter
+                var bookDto = _presenter.GetBookInfo(dto.BookId);
+
                 giversDisplay.Add(new GiverDisplay
                 {
-                    Id = giver.Id,
-                    Name = giver.Name,
-                    BookId = giver.BookId,
-                    BookTitle = book?.Title ?? "Не найдена",
-                    BookAbility = book?.AbilitiesOfTheBook ?? "Нет способности",
-                    PowerCount = giver.YearOfCreation,
-                    Team = giver.Team
+                    Id = dto.Id,
+                    Name = dto.Name,
+                    BookId = dto.BookId,
+                    BookTitle = bookDto?.Title ?? "РќРµ РЅР°Р№РґРµРЅР°",
+                    BookAbility = bookDto?.AbilitiesOfTheBook ?? "РќРµС‚ СЃРїРѕСЃРѕР±РЅРѕСЃС‚Рё",
+                    PowerCount = dto.YearOfCreation,
+                    Team = dto.Team
                 });
             }
 
             dataGridView1.DataSource = giversDisplay;
         }
 
+        /// <summary>
+        /// РџРѕРєР°Р·С‹РІР°РµС‚ СЃРѕРѕР±С‰РµРЅРёРµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ
+        /// </summary>
+        public void ShowMessage(string message)
+        {
+            MessageBox.Show(message, "РРЅС„РѕСЂРјР°С†РёСЏ", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        /// <summary>
+        /// РћС‡РёС‰Р°РµС‚ РІСЃРµ С‚РµРєСЃС‚РѕРІС‹Рµ РїРѕР»СЏ С„РѕСЂРјС‹
+        /// </summary>
+        public void ClearForm()
+        {
+            txtField1.Clear();
+            txtField2.Clear();
+            txtField3.Clear();
+            txtField4.Clear();
+            txtField5.Clear();
+        }
+
+        /// <summary>
+        /// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ СЌР»РµРјРµРЅС‚С‹ СѓРїСЂР°РІР»РµРЅРёСЏ С„РѕСЂРјС‹
+        /// </summary>
+        private void InitializeForm()
+        {
+            cmbEntityType.Items.Add("РљРЅРёРіРё");
+            cmbEntityType.Items.Add("Р”Р°СЂРёС‚РµР»Рё");
+            cmbEntityType.SelectedIndex = 0;
+            cmbEntityType.SelectedIndexChanged += cmbEntityType_SelectedIndexChanged;
+
+            btnAdd.Click += btnAdd_Click;
+            btnUpdate.Click += btnUpdate_Click;
+            btnDelete.Click += btnDelete_Click;
+            btnBusiness1.Click += btnBusiness1_Click;
+            btnBusiness2.Click += btnBusiness2_Click;
+
+            dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dataGridView1.SelectionChanged += dataGridView1_SelectionChanged;
+
+            LoadBooks?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// РћР±СЂР°Р±РѕС‚С‡РёРє РЅР°Р¶Р°С‚РёСЏ РєРЅРѕРїРєРё "Р”РѕР±Р°РІРёС‚СЊ"
+        /// </summary>
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            if (cmbEntityType.SelectedItem.ToString() == "Книги")
+            if (cmbEntityType.SelectedItem.ToString() == "РљРЅРёРіРё")
             {
-                AddBook();
+                AddBook?.Invoke(this, EventArgs.Empty);
             }
             else
             {
-                AddGiver();
+                AddGiver?.Invoke(this, EventArgs.Empty);
             }
         }
 
+        /// <summary>
+        /// РћР±СЂР°Р±РѕС‚С‡РёРє РЅР°Р¶Р°С‚РёСЏ РєРЅРѕРїРєРё "РћР±РЅРѕРІРёС‚СЊ"
+        /// </summary>
         private void btnUpdate_Click(object sender, EventArgs e)
         {
             if (dataGridView1.SelectedRows.Count > 0)
             {
-                if (cmbEntityType.SelectedItem.ToString() == "Книги")
+                if (cmbEntityType.SelectedItem.ToString() == "РљРЅРёРіРё")
                 {
-                    UpdateBook();
+                    UpdateBook?.Invoke(this, EventArgs.Empty);
                 }
                 else
                 {
-                    UpdateGiver();
+                    UpdateGiver?.Invoke(this, EventArgs.Empty);
                 }
             }
             else
             {
-                MessageBox.Show("Выберите элемент для обновления!");
+                MessageBox.Show("Р’С‹Р±РµСЂРёС‚Рµ СЌР»РµРјРµРЅС‚ РґР»СЏ РѕР±РЅРѕРІР»РµРЅРёСЏ!");
             }
         }
 
+        /// <summary>
+        /// РћР±СЂР°Р±РѕС‚С‡РёРє РЅР°Р¶Р°С‚РёСЏ РєРЅРѕРїРєРё "РЈРґР°Р»РёС‚СЊ"
+        /// </summary>
         private void btnDelete_Click(object sender, EventArgs e)
         {
             if (dataGridView1.SelectedRows.Count > 0)
             {
-                if (cmbEntityType.SelectedItem.ToString() == "Книги")
+                if (cmbEntityType.SelectedItem.ToString() == "РљРЅРёРіРё")
                 {
-                    DeleteBook();
+                    DeleteBook?.Invoke(this, EventArgs.Empty);
                 }
                 else
                 {
-                    DeleteGiver();
+                    DeleteGiver?.Invoke(this, EventArgs.Empty);
                 }
             }
             else
             {
-                MessageBox.Show("Выберите элемент для удаления!");
+                MessageBox.Show("Р’С‹Р±РµСЂРёС‚Рµ СЌР»РµРјРµРЅС‚ РґР»СЏ СѓРґР°Р»РµРЅРёСЏ!");
             }
         }
 
-        private void AddBook()
-        {
-            try
-            {
-                _bookManager.AddBook(txtField1.Text, txtField2.Text, txtField3.Text, int.Parse(txtField4.Text));
-                LoadBooks();
-                ClearFields();
-                MessageBox.Show("Книга добавлена!");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка: {ex.Message}");
-            }
-        }
-
-        private void UpdateBook()
-        {
-            var selectedBook = (Book)dataGridView1.SelectedRows[0].DataBoundItem;
-            try
-            {
-                _bookManager.UpdateBook(selectedBook.Id, txtField1.Text, txtField2.Text, txtField3.Text, int.Parse(txtField4.Text));
-                LoadBooks();
-                ClearFields();
-                MessageBox.Show("Книга обновлена!");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка: {ex.Message}");
-            }
-        }
-
-        private void DeleteBook()
-        {
-            var selectedBook = (Book)dataGridView1.SelectedRows[0].DataBoundItem;
-            if (_bookManager.DeleteBook(selectedBook.Id))
-            {
-                LoadBooks();
-                MessageBox.Show("Книга удалена!");
-            }
-            else
-            {
-                MessageBox.Show("Ошибка при удалении книги!");
-            }
-        }
-
-        private void AddGiver()
-        {
-            try
-            {
-                if (!int.TryParse(txtField2.Text, out int bookId))
-                {
-                    MessageBox.Show("Введите корректный ID книги!");
-                    return;
-                }
-
-                if (!int.TryParse(txtField3.Text, out int year))
-                {
-                    MessageBox.Show("Введите корректный год!");
-                    return;
-                }
-
-                _giverManager.AddGiver(txtField1.Text, bookId, year, txtField4.Text);
-                LoadGivers();
-                ClearFields();
-                MessageBox.Show("Даритель добавлен!");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка: {ex.Message}");
-            }
-        }
-
-        private void UpdateGiver()
-        {
-            if (dataGridView1.SelectedRows.Count > 0)
-            {
-                var selectedGiverDisplay = (GiverDisplay)dataGridView1.SelectedRows[0].DataBoundItem;
-                try
-                {
-                    int newBookId = selectedGiverDisplay.BookId;
-                    if (!string.IsNullOrWhiteSpace(txtField2.Text) && int.TryParse(txtField2.Text, out int parsedBookId))
-                    {
-                        newBookId = parsedBookId;
-                    }
-
-                    int newYear = selectedGiverDisplay.PowerCount;
-                    if (!string.IsNullOrWhiteSpace(txtField3.Text) && int.TryParse(txtField3.Text, out int parsedYear))
-                    {
-                        newYear = parsedYear;
-                    }
-
-                    _giverManager.UpdateGiver(selectedGiverDisplay.Id, txtField1.Text, newBookId, newYear, txtField4.Text);
-                    LoadGivers();
-                    ClearFields();
-                    MessageBox.Show("Даритель обновлен!");
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Ошибка: {ex.Message}");
-                }
-            }
-        }
-
-        private void DeleteGiver()
-        {
-            
-            var selectedGiverDisplay = (GiverDisplay)dataGridView1.SelectedRows[0].DataBoundItem;
-            if (_giverManager.DeleteGiver(selectedGiverDisplay.Id)) 
-            {
-                LoadGivers();
-                MessageBox.Show("Даритель удален!");
-            }
-            else
-            {
-                MessageBox.Show("Ошибка при удалении дарителя!");
-            }
-        }
-
+        /// <summary>
+        /// РћР±СЂР°Р±РѕС‚С‡РёРє РЅР°Р¶Р°С‚РёСЏ РєРЅРѕРїРєРё "Р‘РёР·РЅРµСЃ-С„СѓРЅРєС†РёСЏ 1"
+        /// </summary>
         private void btnBusiness1_Click(object sender, EventArgs e)
         {
-            if (cmbEntityType.SelectedItem.ToString() == "Книги")
+            if (cmbEntityType.SelectedItem.ToString() == "РљРЅРёРіРё")
             {
-                var groups = _bookManager.GroupBooksByAuthor();
-                string result = "Книги по авторам:\n\n";
-                foreach (var group in groups)
-                {
-                    result += $"Автор: {group.Key}:\n";
-                    foreach (var book in group.Value)
-                    {
-                        result += $"   - {book.Title} ({book.Year}г., {book.AbilitiesOfTheBook})\n";
-                    }
-                    result += "\n";
-                }
-                MessageBox.Show(result);
+                GroupBooksByAuthor?.Invoke(this, EventArgs.Empty);
             }
             else
             {
-                var groups = _giverBusinessService.GroupGiversByTeams();
-                string result = "Дарители по командам:\n\n";
-                foreach (var group in groups)
-                {
-                    result += $"Команда: {group.Key}:\n";
-                    foreach (var giver in group.Value)
-                    {
-                        var book = _bookManager.GetBookById(giver.BookId);
-                        string bookTitle = book?.Title ?? "Неизвестная книга";
-                        result += $"   - {giver.Name} (книга: {bookTitle})\n";
-                    }
-                    result += "\n";
-                }
-                MessageBox.Show(result);
+                GroupGiversByTeam?.Invoke(this, EventArgs.Empty);
             }
         }
 
+        /// <summary>
+        /// РћР±СЂР°Р±РѕС‚С‡РёРє РЅР°Р¶Р°С‚РёСЏ РєРЅРѕРїРєРё "Р‘РёР·РЅРµСЃ-С„СѓРЅРєС†РёСЏ 2"
+        /// </summary>
         private void btnBusiness2_Click(object sender, EventArgs e)
         {
-            if (cmbEntityType.SelectedItem.ToString() == "Книги")
+            if (cmbEntityType.SelectedItem.ToString() == "РљРЅРёРіРё")
             {
-                string year = Microsoft.VisualBasic.Interaction.InputBox("Введите год:", "Поиск книг", "2000");
-                if (int.TryParse(year, out int yearValue))
-                {
-                    var books = _bookManager.GetBooksPublishedAfterYear(yearValue);
-                    string result = $"Книги после {yearValue} года:\n\n";
-                    foreach (var book in books)
-                    {
-                        result += $"{book.Title} - {book.Author} ({book.Year}г., {book.AbilitiesOfTheBook})\n";
-                    }
-                    MessageBox.Show(result);
-                }
+                BooksAfterYear?.Invoke(this, EventArgs.Empty);
             }
             else
             {
-                string year = Microsoft.VisualBasic.Interaction.InputBox("Введите очки силы:", "Поиск Книг", "2000");
-                if (int.TryParse(year, out int yearValue))
-                {
-                    var givers = _giverBusinessService.GetGiversWithBooksAfterYear(yearValue); 
-                    string result = $"Книги  с очками силы больше {yearValue} :\n\n";
-                    foreach (var giver in givers)
-                    {
-                        var book = _bookManager.GetBookById(giver.BookId);
-                        string bookTitle = book?.Title ?? "Неизвестная книга";
-                        result += $"{giver.Name} - {bookTitle} ({giver.YearOfCreation}г.)\n";
-                    }
-                    MessageBox.Show(result);
-                }
+                GiversWithPower?.Invoke(this, EventArgs.Empty);
             }
         }
 
+        /// <summary>
+        /// РћР±СЂР°Р±РѕС‚С‡РёРє РёР·РјРµРЅРµРЅРёСЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ С‚РёРїР° СЃСѓС‰РЅРѕСЃС‚Рё
+        /// </summary>
+        private void cmbEntityType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ClearForm();
+            if (cmbEntityType.SelectedItem.ToString() == "РљРЅРёРіРё")
+            {
+                LoadBooks?.Invoke(this, EventArgs.Empty);
+                UpdateBookControls();
+            }
+            else
+            {
+                LoadGivers?.Invoke(this, EventArgs.Empty);
+                UpdateGiverControls();
+            }
+        }
+
+        /// <summary>
+        /// РќР°СЃС‚СЂР°РёРІР°РµС‚ СЌР»РµРјРµРЅС‚С‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ РєРЅРёРіР°РјРё
+        /// </summary>
+        private void UpdateBookControls()
+        {
+            lblField1.Text = "РќР°Р·РІР°РЅРёРµ:";
+            lblField2.Text = "РђРІС‚РѕСЂ:";
+            lblField3.Text = "РЎРїРѕСЃРѕР±РЅРѕСЃС‚СЊ:";
+            lblField4.Text = "Р“РѕРґ:";
+
+            lblField1.Visible = true; txtField1.Visible = true;
+            lblField2.Visible = true; txtField2.Visible = true;
+            lblField3.Visible = true; txtField3.Visible = true;
+            lblField4.Visible = true; txtField4.Visible = true;
+            lblField5.Visible = false; txtField5.Visible = false;
+        }
+
+        /// <summary>
+        /// РќР°СЃС‚СЂР°РёРІР°РµС‚ СЌР»РµРјРµРЅС‚С‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ РґР°СЂРёС‚РµР»СЏРјРё
+        /// </summary>
+        private void UpdateGiverControls()
+        {
+            lblField1.Text = "РРјСЏ:";
+            lblField2.Text = "ID РєРЅРёРіРё:";
+            lblField3.Text = "РћС‡РєРё РЎРёР»С‹:";
+            lblField4.Text = "РљРѕРјР°РЅРґР°:";
+
+            lblField1.Visible = true; txtField1.Visible = true;
+            lblField2.Visible = true; txtField2.Visible = true;
+            lblField3.Visible = true; txtField3.Visible = true;
+            lblField4.Visible = true; txtField4.Visible = true;
+            lblField5.Visible = false; txtField5.Visible = false;
+        }
+
+        /// <summary>
+        /// РћР±СЂР°Р±РѕС‚С‡РёРє РёР·РјРµРЅРµРЅРёСЏ РІС‹Р±СЂР°РЅРЅРѕР№ СЃС‚СЂРѕРєРё РІ DataGridView
+        /// </summary>
         private void dataGridView1_SelectionChanged(object sender, EventArgs e)
         {
             if (dataGridView1.SelectedRows.Count > 0)
             {
-                if (cmbEntityType.SelectedItem.ToString() == "Книги")
+                if (cmbEntityType.SelectedItem.ToString() == "РљРЅРёРіРё")
                 {
                     var book = (Book)dataGridView1.SelectedRows[0].DataBoundItem;
                     txtField1.Text = book.Title;
@@ -395,33 +365,16 @@ namespace BookManagerApp.WinFormsUI
                 }
                 else
                 {
-                    
                     var giverDisplay = (GiverDisplay)dataGridView1.SelectedRows[0].DataBoundItem;
                     txtField1.Text = giverDisplay.Name;
-                    txtField2.Text = giverDisplay.BookId.ToString(); 
+                    txtField2.Text = giverDisplay.BookId.ToString();
                     txtField3.Text = giverDisplay.PowerCount.ToString();
                     txtField4.Text = giverDisplay.Team;
                 }
             }
         }
 
-        private void ClearFields()
-        {
-            txtField1.Clear();
-            txtField2.Clear();
-            txtField3.Clear();
-            txtField4.Clear();
-            txtField5.Clear();
-        }
-
-        private void lblField5_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
+        private void lblField5_Click(object sender, EventArgs e) { }
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e) { }
     }
 }

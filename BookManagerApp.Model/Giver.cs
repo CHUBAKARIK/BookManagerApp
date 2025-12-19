@@ -13,7 +13,7 @@ public class Giver :IDomainObject
 {
     public int Id { get; set; }
     public string Name { get; set; }
-    public int BookId { get; set; } // Храним ID книги вместо названия
+    public int BookId { get; set; } 
     public int YearOfCreation { get; set; }
     public string Team { get; set; }
 
@@ -26,7 +26,7 @@ public class Giver :IDomainObject
         Team = team;
     }
     public Giver() { }
-    // Метод для получения книги (нужен доступ к BookManager)
+   
    
 
     public override string ToString()

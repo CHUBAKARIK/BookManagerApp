@@ -12,6 +12,8 @@
     <ProjectReference Include="..\BookManagerApp.DataAccessLayer\BookManagerApp.DataAccessLayer.csproj" />
     <ProjectReference Include="..\BookManagerApp.Logic\BookManagerApp.Logic.csproj" />
     <ProjectReference Include="..\BookManagerApp.Model\BookManagerApp.Model.csproj" />
+    <ProjectReference Include="..\BookManagerApp.Presenter\BookManagerApp.Presenter.csproj" />
+    <ProjectReference Include="..\BookManagerApp.Shared\BookManagerApp.Shared.csproj" />
   </ItemGroup>
 
 </Project>

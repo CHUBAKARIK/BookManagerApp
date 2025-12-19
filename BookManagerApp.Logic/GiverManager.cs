@@ -9,7 +9,7 @@ using BookManagerApp.DataAccessLayer;  // Нужно для репозитори
 namespace BookManagerApp.Logic
 {
     
-    public class GiverManager
+    public class GiverManager : IGiverCRUD
     {
         /// <summary>
         /// ЗАМЕНЯЕМ старый List на репозиторий:
