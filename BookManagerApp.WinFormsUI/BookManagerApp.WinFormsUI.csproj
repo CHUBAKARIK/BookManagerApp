@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Library</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
+	  <OutputType>Library</OutputType>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -12,8 +13,9 @@
     <ProjectReference Include="..\BookManagerApp.DataAccessLayer\BookManagerApp.DataAccessLayer.csproj" />
     <ProjectReference Include="..\BookManagerApp.Logic\BookManagerApp.Logic.csproj" />
     <ProjectReference Include="..\BookManagerApp.Model\BookManagerApp.Model.csproj" />
-    <ProjectReference Include="..\BookManagerApp.Presenter\BookManagerApp.Presenter.csproj" />
     <ProjectReference Include="..\BookManagerApp.Shared\BookManagerApp.Shared.csproj" />
   </ItemGroup>
-
+	<ItemGroup>
+		<PackageReference Include="Ninject" Version="3.3.6" />
+	</ItemGroup>
 </Project>

@@ -42,7 +42,6 @@ namespace BookManagerApp.Presenter
         /// </summary>
         private static void InitializeSharedServices()
         {
-            // Инициализируем BookInfoService
             BookInfoService.Initialize(GetBookInfoInternal);
         }
 
@@ -66,7 +65,7 @@ namespace BookManagerApp.Presenter
             }
             catch (Exception)
             {
-                // Игнорируем ошибку
+                
             }
             return null;
         }

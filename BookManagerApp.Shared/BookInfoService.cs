@@ -1,23 +1,28 @@
-﻿using BookManagerApp.Shared.models;
+﻿// BookManagerApp.Shared/BookInfoService.cs
+using BookManagerApp.Shared.models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BookManagerApp.Shared
 {
+    /// <summary>
+    /// Сервис для получения информации о книгах
+    /// Позволяет View получать данные без зависимости от Presenter'а
+    /// </summary>
     public static class BookInfoService
     {
         private static Func<int, BookDto> _bookInfoProvider;
 
-        // Метод для инициализации (вызывается из CompositionRoot)
+        /// <summary>
+        /// Инициализация (вызывается из PresenterFactory при старте приложения)
+        /// </summary>
         public static void Initialize(Func<int, BookDto> provider)
         {
             _bookInfoProvider = provider;
         }
 
-        // Метод для использования в View
+        /// <summary>
+        /// Получение информации о книге по ID
+        /// </summary>
         public static BookDto GetBookInfo(int bookId)
         {
             return _bookInfoProvider?.Invoke(bookId);

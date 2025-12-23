@@ -20,13 +20,11 @@ namespace BookManagerApp.Logic
             // Bind<IBookRepository>().To<DapperBookRepository>().InSingletonScope();
             // Bind<IGiverRepository>().To<DapperGiverRepository>().InSingletonScope();
 
-            // регистрируем бизнес-логику
             Bind<IBookCRUD>().To<BookManager>().InSingletonScope();
             Bind<IBookBUSINESS>().To<BookBusinesService>().InSingletonScope();
             Bind<IGiverCRUD>().To<GiverManager>().InSingletonScope();
             Bind<IGiverBUSINESS>().To<GiverBusinessService>().InSingletonScope();
 
-            // Фасад - через ИНТЕРФЕЙС (D принцип)
             Bind<ILibraryFacade>().To<LibraryFacade>().InSingletonScope();
 
 

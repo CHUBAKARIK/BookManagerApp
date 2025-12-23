@@ -1,23 +1,38 @@
-﻿using System;
-using BookManagerApp.ConsoleUI;
+﻿using BookManagerApp.ConsoleUI;
 using BookManagerApp.Presenter;
-using BookManagerApp.Shared;
 using BookManagerApp.WinFormsUI;
+using System;
 using System.Windows.Forms;
+using WinFormsApp = System.Windows.Forms.Application; // Алиас, чтобы не конфликтовать с namespace BookManagerApp.Application
 
 namespace BookManagerApp.Application
 {
+    /// <summary>
+    /// Точка входа приложения.
+    /// Отвечает только за старт программы и выбор интерфейса (Console или WinForms).
+    /// Вся бизнес-логика и работа с данными находятся в других проектах.
+    /// </summary>
     public static class Program
     {
+        /// <summary>
+        /// Главная точка входа в приложение.
+        /// Печатает приветствие, определяет какой интерфейс запускать и запускает его.
+        /// </summary>
+        /// <param name="args">
+        /// Аргументы командной строки:
+        /// <list type="bullet">
+        /// <item><description><c>-console</c> — запустить консольный интерфейс</description></item>
+        /// <item><description><c>-winforms</c> — запустить WinForms интерфейс</description></item>
+        /// </list>
+        /// Если аргументы не указаны — приложение спрашивает пользователя.
+        /// </param>
         [STAThread]
         public static void Main(string[] args)
         {
-            Console.WriteLine("=== Система управления книгами и дарителями ===");
-            Console.WriteLine("Архитектура: MVP с Dependency Injection");
+            Console.WriteLine("Система управления книгами и дарителями");
             Console.WriteLine();
 
-            // Определяем режим запуска
-            bool useConsole = DetermineLaunchMode(args);
+            bool useConsole = ShouldUseConsole(args);
 
             if (useConsole)
                 LaunchConsoleApp();
@@ -25,19 +40,41 @@ namespace BookManagerApp.Application
                 LaunchWinFormsApp();
         }
 
-        private static bool DetermineLaunchMode(string[] args)
+        /// <summary>
+        /// Определяет, какой интерфейс нужно запускать: консольный или графический.
+        /// </summary>
+        /// <param name="args">Аргументы командной строки.</param>
+        /// <returns>
+        /// <c>true</c> — запускать консольный интерфейс,
+        /// <c>false</c> — запускать WinForms интерфейс.
+        /// </returns>
+        /// <remarks>
+        /// Логика:
+        /// <list type="number">
+        /// <item><description>Если передан <c>-console</c> — выбирается консоль.</description></item>
+        /// <item><description>Если передан <c>-winforms</c> — выбирается WinForms.</description></item>
+        /// <item><description>Если ничего не передано — спрашиваем пользователя через консоль.</description></item>
+        /// </list>
+        /// </remarks>
+        private static bool ShouldUseConsole(string[] args)
         {
-            // Вариант 1: Через аргументы командной строки
-            if (args.Length > 0)
-            {
-                if (args[0].ToLower() == "-console") return true;
-                if (args[0].ToLower() == "-winforms") return false;
-            }
+            if (args.Length > 0 && args[0].ToLower() == "-console")
+                return true;
 
-            // Вариант 2: Спросить пользователя
+            if (args.Length > 0 && args[0].ToLower() == "-winforms")
+                return false;
+
             return AskUserForInterface();
         }
 
+        /// <summary>
+        /// Спрашивает пользователя в консоли, какой интерфейс запускать.
+        /// </summary>
+        /// <returns>
+        /// <c>true</c> — консоль,
+        /// <c>false</c> — WinForms.
+        /// Если введено некорректно — по умолчанию выбирается консоль.
+        /// </returns>
         private static bool AskUserForInterface()
         {
             Console.WriteLine("Выберите интерфейс для запуска:");
@@ -54,55 +91,59 @@ namespace BookManagerApp.Application
             return true;
         }
 
+        /// <summary>
+        /// Запускает консольную версию приложения.
+        /// Создаёт ConsoleView, затем Presenter через PresenterFactory,
+        /// затем запускает ConsoleApp (меню и цикл работы).
+        /// </summary>
+        /// <remarks>
+        /// Важно: Presenter создаётся обязательно, потому что он подписывается на события View
+        /// (LoadBooks, AddBook и т.д.). Без Presenter события View никто не обработает.
+        /// </remarks>
         private static void LaunchConsoleApp()
         {
-            Console.WriteLine("\n=== Запуск консольного интерфейса ===");
+            Console.WriteLine("\nЗапуск консольного интерфейса ");
 
             try
             {
-                // 1. Создаем View
                 var consoleView = new ConsoleView();
 
-                // 2. Через фабрику создаем Presenter (View НЕ знает о PresenterFactory)
+                
                 var presenter = PresenterFactory.CreateLibraryPresenter(consoleView);
 
-                // 3. Создаем и запускаем консольное приложение
                 var consoleApp = new ConsoleApp(consoleView);
                 consoleApp.Run();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Ошибка при запуске: {ex.Message}");
-                Console.WriteLine(ex.StackTrace);
-                Console.WriteLine("\nНажмите любую клавишу для выхода...");
                 Console.ReadKey();
             }
         }
 
+        /// <summary>
+        /// Запускает WinForms версию приложения.
+        /// Включает визуальные стили, получает фасад через PresenterFactory,
+        /// создаёт MainForm и запускает WinForms message-loop.
+        /// </summary>
+        /// <remarks>
+        /// Здесь мы используем алиас <c>WinFormsApp</c>, чтобы явно обратиться к
+        /// <see cref="System.Windows.Forms.Application"/> и не конфликтовать с namespace
+        /// <c>BookManagerApp.Application</c>.
+        /// </remarks>
         [STAThread]
         private static void LaunchWinFormsApp()
         {
-            Console.WriteLine("\n=== Запуск графического интерфейса ===");
+            WinFormsApp.EnableVisualStyles();
+            WinFormsApp.SetCompatibleTextRenderingDefault(false);
 
-            try
-            {
-                // 1. Получаем фасад через фабрику
-                var libraryFacade = PresenterFactory.GetLibraryFacade();
+            var mainForm = new MainForm();
 
-                // 2. Настраиваем Windows Forms
-                Application.EnableVisualStyles();
-                Application.SetCompatibleTextRenderingDefault(false);
+            // ВОТ ГДЕ ПОДПИСКА на события делается ОДИН РАЗ
+            PresenterFactory.CreateLibraryPresenter(mainForm);
 
-                // 3. Создаем форму (она создаст Presenter внутри себя)
-                Application.Run(new MainForm(libraryFacade));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Ошибка при запуске WinForms: {ex.Message}");
-                Console.WriteLine(ex.StackTrace);
-                Console.WriteLine("\nНажмите любую клавишу для выхода...");
-                Console.ReadKey();
-            }
+            WinFormsApp.Run(mainForm);
         }
+
     }
 }

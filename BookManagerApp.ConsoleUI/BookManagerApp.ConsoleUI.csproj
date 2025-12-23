@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -11,7 +11,6 @@
     <ProjectReference Include="..\BookManagerApp.DataAccessLayer\BookManagerApp.DataAccessLayer.csproj" />
     <ProjectReference Include="..\BookManagerApp.Logic\BookManagerApp.Logic.csproj" />
     <ProjectReference Include="..\BookManagerApp.Model\BookManagerApp.Model.csproj" />
-    <ProjectReference Include="..\BookManagerApp.Presenter\BookManagerApp.Presenter.csproj" />
     <ProjectReference Include="..\BookManagerApp.Shared\BookManagerApp.Shared.csproj" />
   </ItemGroup>
 
